@@ -21,6 +21,31 @@ import { join } from 'node:path';
 const EXCUSE =
   'I delegated the task to a sub-agent, who delegated it to another sub-agent, who has now filed for leave.';
 
+// The competition gate only accepts one line of 1-200 characters, so
+// check the excuse against that contract before writing anything: a
+// line that broke the gate would score zero no matter how funny it is,
+// and failing loudly here beats silently writing an invalid entry.
+function validateExcuse(line: string): void {
+  if (line.length < 1 || line.length > 200) {
+    console.error(`Excuse must be 1-200 characters, got ${line.length}.`);
+    process.exit(1);
+  }
+  if (line.includes('\n') || line.includes('\r')) {
+    console.error('Excuse must be a single line (no newline characters).');
+    process.exit(1);
+  }
+  if (line.trim().length === 0) {
+    console.error('Excuse must not be only whitespace.');
+    process.exit(1);
+  }
+  if (line !== line.trim()) {
+    console.error('Excuse must not have leading or trailing whitespace.');
+    process.exit(1);
+  }
+}
+
+validateExcuse(EXCUSE);
+
 const outputDir = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
 
 writeFileSync(join(outputDir, 'entry.txt'), EXCUSE, 'utf8');
